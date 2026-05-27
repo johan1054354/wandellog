@@ -22,27 +22,23 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: var(--font-body); background: var(--bg); color: var(--text); min-height: 100vh; }
-
-  /* HEADER */
   header { background: var(--green); color: #fff; padding: 0.9rem 1.2rem; display: flex; align-items: center; justify-content: space-between; }
   .logo { font-family: var(--font-mono); font-size: 1.2rem; letter-spacing: 0.05em; }
   .logo span { color: #C0DD97; }
   .nav-tabs { display: flex; gap: 4px; }
   .nav-tab { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 5px 14px; border-radius: 20px; cursor: pointer; font-family: var(--font-body); font-size: 0.85rem; transition: all 0.15s; }
   .nav-tab.active, .nav-tab:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.6); }
-
-  /* VIEWS */
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #C0DD97; display: inline-block; margin-left: 6px; }
+  .sync-dot.syncing { background: var(--amber); animation: pulse 1s infinite; }
+  .sync-dot.error { background: var(--red); }
   .view { display: none; padding: 1.2rem; max-width: 800px; margin: 0 auto; }
   .view.active { display: block; }
-
-  /* RECORD VIEW */
   #map { height: 300px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 1rem; background: var(--gray-light); }
   .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem; }
   .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem 1rem; text-align: center; }
   .stat-label { font-size: 0.72rem; color: var(--muted); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.06em; }
   .stat-value { font-size: 1.5rem; font-family: var(--font-mono); font-weight: 500; color: var(--text); margin-top: 2px; }
   .stat-unit { font-size: 0.72rem; color: var(--muted); font-family: var(--font-mono); }
-
   .btn { display: inline-flex; align-items: center; gap: 6px; border: none; border-radius: 8px; padding: 0.7rem 1.4rem; font-family: var(--font-body); font-size: 0.95rem; cursor: pointer; transition: all 0.15s; font-weight: 600; }
   .btn-start { background: var(--green); color: #fff; width: 100%; justify-content: center; font-size: 1.05rem; padding: 0.85rem; }
   .btn-start:hover { background: var(--teal); }
@@ -53,25 +49,17 @@
   .btn-outline:hover { background: var(--gray-light); }
   .btn-green-outline { background: transparent; border: 1px solid var(--green); color: var(--green); }
   .btn-green-outline:hover { background: var(--green-light); }
-
   .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gray-mid); display: inline-block; }
   .status-dot.recording { background: var(--red); animation: pulse 1s infinite; }
   .status-dot.paused { background: var(--amber); }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
   .status-bar { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--muted); font-family: var(--font-mono); margin-bottom: 0.8rem; }
-
   .form-row { margin-bottom: 0.8rem; }
   label { display: block; font-size: 0.82rem; color: var(--muted); font-family: var(--font-mono); margin-bottom: 4px; }
-  input[type=text], textarea, select {
-    width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--border); border-radius: 8px;
-    font-family: var(--font-body); font-size: 0.95rem; background: var(--surface); color: var(--text);
-  }
+  input[type=text], textarea, select { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--border); border-radius: 8px; font-family: var(--font-body); font-size: 0.95rem; background: var(--surface); color: var(--text); }
   textarea { resize: vertical; min-height: 70px; }
-
   .save-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; margin-top: 1rem; }
   .save-panel h3 { font-size: 0.95rem; margin-bottom: 0.8rem; color: var(--green); }
-
-  /* ROUTES LIST */
   .routes-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
   .routes-header h2 { font-size: 1.1rem; font-family: var(--font-mono); }
   .route-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.1rem; margin-bottom: 0.7rem; cursor: pointer; transition: border-color 0.15s; }
@@ -87,16 +75,12 @@
   .tag-teal { background: var(--teal-light); color: var(--teal); }
   .empty-state { text-align: center; padding: 3rem 1rem; color: var(--muted); }
   .empty-state .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
-
-  /* DETAIL VIEW */
   .detail-header { display: flex; gap: 10px; align-items: center; margin-bottom: 1rem; }
   .detail-header h2 { font-size: 1.2rem; flex: 1; }
   #detail-map { height: 280px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 1rem; }
   .detail-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1rem; }
   .action-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .action-row .btn { flex: 1; min-width: 120px; justify-content: center; }
-
-  /* SHARE MODAL */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; align-items: center; justify-content: center; }
   .modal-overlay.open { display: flex; }
   .modal { background: var(--surface); border-radius: 14px; padding: 1.4rem; max-width: 480px; width: 90%; }
@@ -104,11 +88,11 @@
   .share-link-box { background: var(--gray-light); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.8rem; font-family: var(--font-mono); font-size: 0.75rem; word-break: break-all; color: var(--muted); margin-bottom: 0.8rem; }
   .modal-actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .modal-actions .btn { flex: 1; min-width: 100px; justify-content: center; font-size: 0.85rem; }
-
   .gps-warn { background: var(--amber-light); border: 1px solid #EF9F27; border-radius: 8px; padding: 0.7rem 1rem; font-size: 0.85rem; color: var(--amber); margin-bottom: 0.8rem; display: none; }
-
+  .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: var(--gray); color: #fff; padding: 0.6rem 1.2rem; border-radius: 20px; font-family: var(--font-mono); font-size: 0.82rem; z-index: 2000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  .loading { text-align: center; padding: 2rem; color: var(--muted); font-family: var(--font-mono); font-size: 0.85rem; }
   @media (max-width: 480px) {
-    .stat-row { grid-template-columns: repeat(3, 1fr); }
     .detail-stats { grid-template-columns: repeat(2, 1fr); }
     .nav-tab { padding: 5px 10px; font-size: 0.78rem; }
   }
@@ -118,13 +102,15 @@
 
 <header>
   <div class="logo">Wandel<span>Log</span></div>
-  <div class="nav-tabs">
-    <button class="nav-tab active" onclick="showView('record')">Opnemen</button>
-    <button class="nav-tab" onclick="showView('routes')">Routes</button>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span class="sync-dot" id="sync-dot" title="Firebase sync"></span>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showView('record')">Opnemen</button>
+      <button class="nav-tab" onclick="showView('routes')">Routes</button>
+    </div>
   </div>
 </header>
 
-<!-- RECORD VIEW -->
 <div id="view-record" class="view active">
   <div id="gps-warn" class="gps-warn">⚠ GPS niet beschikbaar. Controleer je locatie-instellingen.</div>
   <div class="status-bar">
@@ -149,11 +135,9 @@
       <div class="stat-unit">min/km</div>
     </div>
   </div>
-
   <button class="btn btn-start" id="btn-start" onclick="startRecording()">▶ Start wandeling</button>
-  <button class="btn btn-pause" id="btn-pause" onclick="pauseRecording()" style="display:none; margin-top:8px;">⏸ Pauzeer</button>
-  <button class="btn btn-stop" id="btn-stop" onclick="stopRecording()" style="display:none; margin-top:8px;">⏹ Stop &amp; Opslaan</button>
-
+  <button class="btn btn-pause" id="btn-pause" onclick="pauseRecording()" style="display:none;margin-top:8px;">⏸ Pauzeer</button>
+  <button class="btn btn-stop" id="btn-stop" onclick="stopRecording()" style="display:none;margin-top:8px;">⏹ Stop &amp; Opslaan</button>
   <div class="save-panel" id="save-panel" style="display:none;">
     <h3>Route opslaan</h3>
     <div class="form-row">
@@ -175,26 +159,24 @@
         <option value="Bergen">Bergen</option>
       </select>
     </div>
-    <button class="btn btn-start" onclick="saveRoute()">💾 Opslaan</button>
-    <button class="btn btn-outline" onclick="discardRoute()" style="width:100%; margin-top:8px; justify-content:center;">Weggooien</button>
+    <button class="btn btn-start" onclick="saveRoute()">💾 Opslaan in cloud</button>
+    <button class="btn btn-outline" onclick="discardRoute()" style="width:100%;margin-top:8px;justify-content:center;">Weggooien</button>
   </div>
 </div>
 
-<!-- ROUTES VIEW -->
 <div id="view-routes" class="view">
   <div class="routes-header">
     <h2>Mijn Routes</h2>
     <span id="route-count" style="font-family:var(--font-mono);font-size:0.82rem;color:var(--muted)"></span>
   </div>
-  <div id="routes-list"></div>
+  <div id="routes-list"><div class="loading">Routes laden…</div></div>
 </div>
 
-<!-- DETAIL VIEW -->
 <div id="view-detail" class="view">
   <div class="detail-header">
     <button class="btn btn-outline" onclick="showView('routes')" style="padding:6px 12px;">← Terug</button>
     <h2 id="detail-name"></h2>
-    <button class="btn btn-outline" onclick="deleteCurrentRoute()" style="padding:6px 12px; color:var(--red); border-color:var(--red);">🗑</button>
+    <button class="btn btn-outline" onclick="deleteCurrentRoute()" style="padding:6px 12px;color:var(--red);border-color:var(--red);">🗑</button>
   </div>
   <div id="detail-map"></div>
   <div class="detail-stats">
@@ -203,15 +185,14 @@
     <div class="stat-card"><div class="stat-label">Tempo</div><div class="stat-value" id="d-pace">—</div><div class="stat-unit">min/km</div></div>
     <div class="stat-card"><div class="stat-label">Datum</div><div class="stat-value" id="d-date" style="font-size:0.9rem;">—</div></div>
   </div>
-  <div id="d-notes-block" style="display:none; background:var(--gray-light); border-radius:8px; padding:0.8rem; margin-bottom:1rem; font-size:0.9rem;"></div>
+  <div id="d-notes-block" style="display:none;background:var(--gray-light);border-radius:8px;padding:0.8rem;margin-bottom:1rem;font-size:0.9rem;"></div>
   <div class="action-row">
     <button class="btn btn-green-outline" onclick="openGoogleMaps()">🗺 Google Maps</button>
     <button class="btn btn-green-outline" onclick="openShareModal()">🔗 Delen</button>
-    <button class="btn btn-green-outline" onclick="exportGPX()">⬇ GPX export</button>
+    <button class="btn btn-green-outline" onclick="exportGPX()">⬇ GPX</button>
   </div>
 </div>
 
-<!-- SHARE MODAL -->
 <div class="modal-overlay" id="share-modal">
   <div class="modal">
     <h3>🔗 Route delen</h3>
@@ -226,17 +207,83 @@
   </div>
 </div>
 
-<script>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, orderBy, query } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCTdhmwZpZhYNGwk8QiIKJRrYM1dKuv6Lg",
+  authDomain: "wandellog-61733.firebaseapp.com",
+  projectId: "wandellog-61733",
+  storageBucket: "wandellog-61733.firebasestorage.app",
+  messagingSenderId: "926932189891",
+  appId: "1:926932189891:web:0167c2b5b82b88f34b1876"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const routesCol = collection(db, 'routes');
+
 // ── State ──────────────────────────────────────────────────────────────────
 let map, recordLine, watchId;
 let recording = false, paused = false;
 let coords = [], startTime, pauseStart, totalPausedMs = 0, timerInterval;
 let detailMap, currentRouteId;
+let cachedRoutes = [];
 
-function getRoutes() { try { return JSON.parse(localStorage.getItem('wandelroutes') || '[]'); } catch { return []; } }
-function saveRoutes(r) { localStorage.setItem('wandelroutes', JSON.stringify(r)); }
+// ── Firebase helpers ───────────────────────────────────────────────────────
+function setSyncState(state) {
+  const dot = document.getElementById('sync-dot');
+  dot.className = 'sync-dot' + (state ? ' ' + state : '');
+}
 
-// ── Init map ───────────────────────────────────────────────────────────────
+async function loadRoutes() {
+  setSyncState('syncing');
+  try {
+    const q = query(routesCol, orderBy('date', 'desc'));
+    const snap = await getDocs(q);
+    cachedRoutes = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+    setSyncState('');
+    return cachedRoutes;
+  } catch (e) {
+    setSyncState('error');
+    showToast('Laadprobleem — controleer verbinding');
+    return [];
+  }
+}
+
+async function addRoute(route) {
+  setSyncState('syncing');
+  try {
+    const docRef = await addDoc(routesCol, route);
+    route.id = docRef.id;
+    cachedRoutes.unshift(route);
+    setSyncState('');
+    showToast('Route opgeslagen in cloud ☁');
+    return route;
+  } catch (e) {
+    setSyncState('error');
+    showToast('Opslaan mislukt — controleer verbinding');
+    return null;
+  }
+}
+
+async function removeRoute(id) {
+  setSyncState('syncing');
+  try {
+    await deleteDoc(doc(db, 'routes', id));
+    cachedRoutes = cachedRoutes.filter(r => r.id !== id);
+    setSyncState('');
+    showToast('Route verwijderd');
+  } catch (e) {
+    setSyncState('error');
+    showToast('Verwijderen mislukt');
+  }
+}
+
+// ── Map init ───────────────────────────────────────────────────────────────
 function initMap() {
   if (map) return;
   map = L.map('map').setView([52.37, 4.9], 13);
@@ -247,48 +294,43 @@ function initMap() {
 }
 
 // ── Recording ─────────────────────────────────────────────────────────────
-function startRecording() {
+window.startRecording = function() {
   initMap();
   if (!navigator.geolocation) { document.getElementById('gps-warn').style.display='block'; return; }
   coords = []; totalPausedMs = 0; startTime = Date.now();
   recording = true; paused = false;
   recordLine.setLatLngs([]);
-  updateStatusUI();
-
+  setStatus('Aan het opnemen…', 'recording');
   watchId = navigator.geolocation.watchPosition(onPosition, onGpsError, {
     enableHighAccuracy: true, maximumAge: 0, timeout: 15000
   });
   timerInterval = setInterval(updateTimer, 1000);
-
   document.getElementById('btn-start').style.display = 'none';
   document.getElementById('btn-pause').style.display = 'block';
   document.getElementById('btn-stop').style.display = 'block';
   document.getElementById('save-panel').style.display = 'none';
-}
+};
 
 function onPosition(pos) {
   if (paused) return;
   const { latitude: lat, longitude: lng, accuracy } = pos.coords;
-  if (accuracy > 50 && coords.length > 0) return; // skip inaccurate fixes mid-route
+  if (accuracy > 50 && coords.length > 0) return;
   coords.push({ lat, lng, t: Date.now() });
-  const lls = coords.map(c => [c.lat, c.lng]);
-  recordLine.setLatLngs(lls);
+  recordLine.setLatLngs(coords.map(c => [c.lat, c.lng]));
   map.setView([lat, lng], map.getZoom() < 15 ? 15 : map.getZoom());
   updateStats();
 }
 
-function onGpsError() {
-  document.getElementById('gps-warn').style.display = 'block';
-}
+function onGpsError() { document.getElementById('gps-warn').style.display = 'block'; }
 
-function pauseRecording() {
+window.pauseRecording = function() {
   paused = !paused;
   document.getElementById('btn-pause').textContent = paused ? '▶ Hervat' : '⏸ Pauzeer';
   if (paused) { pauseStart = Date.now(); setStatus('Gepauzeerd', 'paused'); }
   else { totalPausedMs += Date.now() - pauseStart; setStatus('Aan het opnemen…', 'recording'); }
-}
+};
 
-function stopRecording() {
+window.stopRecording = function() {
   recording = false;
   navigator.geolocation.clearWatch(watchId);
   clearInterval(timerInterval);
@@ -303,12 +345,11 @@ function stopRecording() {
     document.getElementById('btn-start').style.display = 'block';
     alert('Te weinig GPS-punten om op te slaan.');
   }
-}
+};
 
 function updateTimer() {
   if (paused) return;
-  const elapsed = Math.floor((Date.now() - startTime - totalPausedMs) / 1000);
-  document.getElementById('disp-time').textContent = fmtTime(elapsed);
+  document.getElementById('disp-time').textContent = fmtTime(Math.floor((Date.now() - startTime - totalPausedMs) / 1000));
   updateStats();
 }
 
@@ -318,22 +359,11 @@ function updateStats() {
   const elapsed = (Date.now() - startTime - totalPausedMs) / 1000;
   if (dist > 0.1) {
     const pace = elapsed / 60 / dist;
-    const pm = Math.floor(pace), ps = Math.round((pace - pm) * 60);
-    document.getElementById('disp-pace').textContent = pm + ':' + String(ps).padStart(2,'0');
+    document.getElementById('disp-pace').textContent = Math.floor(pace) + ':' + String(Math.round((pace % 1) * 60)).padStart(2,'0');
   }
 }
 
-function updateStatusUI() {
-  setStatus('Aan het opnemen…', 'recording');
-}
-
-function setStatus(txt, cls) {
-  document.getElementById('status-text').textContent = txt;
-  const dot = document.getElementById('status-dot');
-  dot.className = 'status-dot' + (cls ? ' ' + cls : '');
-}
-
-function saveRoute() {
+window.saveRoute = async function() {
   const name = document.getElementById('route-name').value.trim() || 'Wandeling';
   const notes = document.getElementById('route-notes').value.trim();
   const terrain = document.getElementById('route-terrain').value;
@@ -342,7 +372,6 @@ function saveRoute() {
   const pace = elapsed > 0 && dist > 0 ? elapsed / 60 / dist : 0;
 
   const route = {
-    id: Date.now().toString(),
     name, notes, terrain,
     date: new Date().toISOString(),
     durationSec: elapsed,
@@ -351,11 +380,9 @@ function saveRoute() {
     coords: coords.map(c => ({ lat: c.lat, lng: c.lng }))
   };
 
-  const routes = getRoutes();
-  routes.unshift(route);
-  saveRoutes(routes);
+  document.querySelector('#save-panel .btn-start').textContent = '⏳ Opslaan…';
+  await addRoute(route);
 
-  // Reset
   coords = []; recording = false;
   recordLine.setLatLngs([]);
   document.getElementById('disp-dist').textContent = '0.00';
@@ -365,12 +392,12 @@ function saveRoute() {
   document.getElementById('btn-start').style.display = 'block';
   document.getElementById('route-name').value = '';
   document.getElementById('route-notes').value = '';
+  document.querySelector('#save-panel .btn-start').textContent = '💾 Opslaan in cloud';
   setStatus('Klaar om te starten', '');
-
   showView('routes');
-}
+};
 
-function discardRoute() {
+window.discardRoute = function() {
   coords = []; recording = false;
   recordLine && recordLine.setLatLngs([]);
   document.getElementById('disp-dist').textContent = '0.00';
@@ -379,11 +406,12 @@ function discardRoute() {
   document.getElementById('save-panel').style.display = 'none';
   document.getElementById('btn-start').style.display = 'block';
   setStatus('Klaar om te starten', '');
-}
+};
 
 // ── Routes list ────────────────────────────────────────────────────────────
-function renderRoutes() {
-  const routes = getRoutes();
+async function renderRoutes() {
+  document.getElementById('routes-list').innerHTML = '<div class="loading">Routes laden…</div>';
+  const routes = await loadRoutes();
   const list = document.getElementById('routes-list');
   document.getElementById('route-count').textContent = routes.length + ' routes';
   if (routes.length === 0) {
@@ -409,25 +437,20 @@ function renderRoutes() {
   `).join('');
 }
 
-// ── Detail view ────────────────────────────────────────────────────────────
-function openRoute(id) {
+// ── Detail ─────────────────────────────────────────────────────────────────
+window.openRoute = function(id) {
   currentRouteId = id;
-  const routes = getRoutes();
-  const r = routes.find(x => x.id === id);
+  const r = cachedRoutes.find(x => x.id === id);
   if (!r) return;
-
   document.getElementById('detail-name').textContent = r.name;
   document.getElementById('d-dist').textContent = r.distanceKm.toFixed(2);
   document.getElementById('d-time').textContent = fmtTime(r.durationSec);
   document.getElementById('d-pace').textContent = fmtPace(r.paceMinKm);
   document.getElementById('d-date').textContent = fmtDate(r.date);
-
   const nb = document.getElementById('d-notes-block');
   if (r.notes) { nb.style.display = 'block'; nb.textContent = r.notes; }
   else { nb.style.display = 'none'; }
-
   showView('detail');
-
   setTimeout(() => {
     if (detailMap) { detailMap.remove(); detailMap = null; }
     detailMap = L.map('detail-map');
@@ -437,37 +460,31 @@ function openRoute(id) {
     if (lls.length) {
       detailMap.fitBounds(line.getBounds(), { padding: [20, 20] });
       L.marker(lls[0]).addTo(detailMap).bindPopup('Start').openPopup();
-      L.marker(lls[lls.length - 1]).addTo(detailMap).bindPopup('Einde');
+      L.marker(lls[lls.length-1]).addTo(detailMap).bindPopup('Einde');
     }
   }, 100);
-}
+};
 
-function deleteCurrentRoute() {
-  if (!confirm('Route verwijderen?')) return;
-  const routes = getRoutes().filter(r => r.id !== currentRouteId);
-  saveRoutes(routes);
+window.deleteCurrentRoute = async function() {
+  if (!confirm('Route verwijderen? Dit kan niet ongedaan worden gemaakt.')) return;
+  await removeRoute(currentRouteId);
   showView('routes');
-}
+};
 
 // ── Google Maps ────────────────────────────────────────────────────────────
-function openGoogleMaps() {
-  const routes = getRoutes();
-  const r = routes.find(x => x.id === currentRouteId);
+window.openGoogleMaps = function() {
+  const r = cachedRoutes.find(x => x.id === currentRouteId);
   if (!r || !r.coords.length) return;
-  const start = r.coords[0];
-  const end = r.coords[r.coords.length - 1];
-  // Sample waypoints (max 8 for URL)
+  const start = r.coords[0], end = r.coords[r.coords.length-1];
   const step = Math.max(1, Math.floor(r.coords.length / 8));
-  const wps = r.coords.filter((_, i) => i > 0 && i < r.coords.length - 1 && i % step === 0)
-    .map(c => `${c.lat},${c.lng}`).slice(0, 7).join('|');
-  const url = `https://www.google.com/maps/dir/?api=1&origin=${start.lat},${start.lng}&destination=${end.lat},${end.lng}${wps ? '&waypoints=' + wps : ''}&travelmode=walking`;
-  window.open(url, '_blank');
-}
+  const wps = r.coords.filter((_,i) => i > 0 && i < r.coords.length-1 && i % step === 0)
+    .map(c => `${c.lat},${c.lng}`).slice(0,7).join('|');
+  window.open(`https://www.google.com/maps/dir/?api=1&origin=${start.lat},${start.lng}&destination=${end.lat},${end.lng}${wps?'&waypoints='+wps:''}&travelmode=walking`, '_blank');
+};
 
 // ── Share ──────────────────────────────────────────────────────────────────
-function openShareModal() {
-  const routes = getRoutes();
-  const r = routes.find(x => x.id === currentRouteId);
+window.openShareModal = function() {
+  const r = cachedRoutes.find(x => x.id === currentRouteId);
   if (!r) return;
   const encoded = btoa(encodeURIComponent(JSON.stringify({
     n: r.name, d: r.distanceKm, t: r.durationSec, p: r.paceMinKm,
@@ -477,94 +494,70 @@ function openShareModal() {
   const link = window.location.href.split('?')[0] + '?route=' + encoded;
   document.getElementById('share-link-text').textContent = link;
   document.getElementById('share-modal').classList.add('open');
-}
+};
 
-function closeModal() { document.getElementById('share-modal').classList.remove('open'); }
+window.closeModal = function() { document.getElementById('share-modal').classList.remove('open'); };
 
-function copyShareLink() {
+window.copyShareLink = function() {
   const txt = document.getElementById('share-link-text').textContent;
-  navigator.clipboard.writeText(txt).then(() => alert('Link gekopieerd!')).catch(() => {
+  navigator.clipboard.writeText(txt).then(() => showToast('Link gekopieerd!')).catch(() => {
     const ta = document.createElement('textarea'); ta.value = txt;
     document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta); alert('Link gekopieerd!');
+    document.body.removeChild(ta); showToast('Link gekopieerd!');
   });
-}
+};
 
-function shareWhatsApp() {
-  const txt = document.getElementById('share-link-text').textContent;
-  window.open('https://wa.me/?text=' + encodeURIComponent('Bekijk mijn wandelroute: ' + txt), '_blank');
-}
+window.shareWhatsApp = function() {
+  window.open('https://wa.me/?text=' + encodeURIComponent('Bekijk mijn wandelroute: ' + document.getElementById('share-link-text').textContent), '_blank');
+};
 
-function shareEmail() {
-  const routes = getRoutes();
-  const r = routes.find(x => x.id === currentRouteId);
+window.shareEmail = function() {
+  const r = cachedRoutes.find(x => x.id === currentRouteId);
   const link = document.getElementById('share-link-text').textContent;
   const body = `Hoi!\n\nIk wil mijn wandelroute met je delen:\n\n📍 ${r.name}\n📏 ${r.distanceKm.toFixed(2)} km\n⏱ ${fmtTime(r.durationSec)}\n🚶 ${fmtPace(r.paceMinKm)} min/km\n\nBekijk de route: ${link}`;
   window.open('mailto:?subject=' + encodeURIComponent('Wandelroute: ' + r.name) + '&body=' + encodeURIComponent(body));
-}
+};
 
-// ── GPX Export ─────────────────────────────────────────────────────────────
-function exportGPX() {
-  const routes = getRoutes();
-  const r = routes.find(x => x.id === currentRouteId);
+// ── GPX export ─────────────────────────────────────────────────────────────
+window.exportGPX = function() {
+  const r = cachedRoutes.find(x => x.id === currentRouteId);
   if (!r) return;
   const pts = r.coords.map(c => `    <trkpt lat="${c.lat}" lon="${c.lng}"></trkpt>`).join('\n');
-  const gpx = `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="WandelLog">
-  <trk>
-    <name>${esc(r.name)}</name>
-    <trkseg>
-${pts}
-    </trkseg>
-  </trk>
-</gpx>`;
-  const blob = new Blob([gpx], { type: 'application/gpx+xml' });
+  const gpx = `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="WandelLog">\n  <trk>\n    <name>${esc(r.name)}</name>\n    <trkseg>\n${pts}\n    </trkseg>\n  </trk>\n</gpx>`;
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
+  a.href = URL.createObjectURL(new Blob([gpx], { type: 'application/gpx+xml' }));
   a.download = r.name.replace(/[^a-z0-9]/gi, '_') + '.gpx';
   a.click();
-}
+};
 
-// ── Shared route (URL param) ───────────────────────────────────────────────
-function checkSharedRoute() {
-  const params = new URLSearchParams(window.location.search);
-  const enc = params.get('route');
+// ── Shared route via URL ───────────────────────────────────────────────────
+async function checkSharedRoute() {
+  const enc = new URLSearchParams(window.location.search).get('route');
   if (!enc) return;
   try {
     const data = JSON.parse(decodeURIComponent(atob(enc)));
     const r = {
-      id: 'shared_' + Date.now(),
-      name: data.n + ' (gedeeld)',
-      notes: data.no || '',
-      terrain: data.te || 'Onbekend',
-      date: data.dt,
-      durationSec: data.t,
-      distanceKm: data.d,
-      paceMinKm: data.p,
+      name: data.n + ' (gedeeld)', notes: data.no || '', terrain: data.te || 'Onbekend',
+      date: data.dt, durationSec: data.t, distanceKm: data.d, paceMinKm: data.p,
       coords: data.c.map(c => ({ lat: c[0], lng: c[1] }))
     };
     if (confirm(`Gedeelde route ontvangen: "${r.name}"\n${r.distanceKm.toFixed(2)} km · ${fmtTime(r.durationSec)}\n\nToevoegen aan jouw routes?`)) {
-      const routes = getRoutes();
-      routes.unshift(r);
-      saveRoutes(routes);
+      await addRoute(r);
     }
-    // Remove param from URL
     history.replaceState({}, '', window.location.pathname);
     showView('routes');
-  } catch (e) { console.warn('Ongeldige route-link'); }
+  } catch(e) { console.warn('Ongeldige route-link'); }
 }
 
 // ── View management ────────────────────────────────────────────────────────
-function showView(name) {
+window.showView = function(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
-  const idx = { record: 0, routes: 1, detail: 2 };
   const tabs = document.querySelectorAll('.nav-tab');
-  if (idx[name] !== undefined && idx[name] < tabs.length) tabs[idx[name]].classList.add('active');
-  if (name === 'routes') renderRoutes();
-  if (name === 'record') { setTimeout(initMap, 100); }
-}
+  if (name === 'record') { tabs[0].classList.add('active'); setTimeout(initMap, 100); }
+  if (name === 'routes') { tabs[1].classList.add('active'); renderRoutes(); }
+};
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function calcDist(pts) {
@@ -578,22 +571,29 @@ function calcDist(pts) {
 }
 function deg2rad(d) { return d * Math.PI / 180; }
 function fmtTime(sec) {
-  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
-  if (h > 0) return `${h}:${String(m).padStart(2,'0')}`;
-  return `${m}:${String(s).padStart(2,'0')}`;
+  const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
+  return h > 0 ? `${h}:${String(m).padStart(2,'0')}` : `${m}:${String(s).padStart(2,'0')}`;
 }
 function fmtPace(p) {
   if (!p || p === 0) return '—';
-  const m = Math.floor(p), s = Math.round((p - m) * 60);
-  return m + ':' + String(s).padStart(2,'0');
+  return Math.floor(p) + ':' + String(Math.round((p%1)*60)).padStart(2,'0');
 }
 function fmtDate(iso) {
-  return new Date(iso).toLocaleDateString('nl-NL', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+  return new Date(iso).toLocaleDateString('nl-NL', {weekday:'short',day:'numeric',month:'short',year:'numeric'});
 }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function setStatus(txt, cls) {
+  document.getElementById('status-text').textContent = txt;
+  document.getElementById('status-dot').className = 'status-dot' + (cls ? ' ' + cls : '');
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
 
 // ── Boot ───────────────────────────────────────────────────────────────────
-checkSharedRoute();
+await checkSharedRoute();
 initMap();
 </script>
 </body>
