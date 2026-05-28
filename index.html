@@ -49,9 +49,12 @@
   .btn-outline:hover { background: var(--gray-light); }
   .btn-green-outline { background: transparent; border: 1px solid var(--green); color: var(--green); }
   .btn-green-outline:hover { background: var(--green-light); }
+  .btn-teal { background: var(--teal); color: #fff; width: 100%; justify-content: center; font-size: 1.05rem; padding: 0.85rem; }
+  .btn-teal:hover { background: var(--green); }
   .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gray-mid); display: inline-block; }
   .status-dot.recording { background: var(--red); animation: pulse 1s infinite; }
   .status-dot.paused { background: var(--amber); }
+  .status-dot.navigating { background: var(--teal); animation: pulse 1s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
   .status-bar { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--muted); font-family: var(--font-mono); margin-bottom: 0.8rem; }
   .form-row { margin-bottom: 0.8rem; }
@@ -76,11 +79,12 @@
   .empty-state { text-align: center; padding: 3rem 1rem; color: var(--muted); }
   .empty-state .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
   .detail-header { display: flex; gap: 10px; align-items: center; margin-bottom: 1rem; }
-  .detail-header h2 { font-size: 1.2rem; flex: 1; }
+  .detail-header h2 { font-size: 1.2rem; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #detail-map { height: 280px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 1rem; }
-  .detail-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1rem; }
-  .action-row { display: flex; gap: 8px; flex-wrap: wrap; }
-  .action-row .btn { flex: 1; min-width: 120px; justify-content: center; }
+  .detail-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 0.6rem; }
+  .detail-stats-2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem; }
+  .action-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .action-row .btn { flex: 1; min-width: 100px; justify-content: center; }
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; align-items: center; justify-content: center; }
   .modal-overlay.open { display: flex; }
   .modal { background: var(--surface); border-radius: 14px; padding: 1.4rem; max-width: 480px; width: 90%; }
@@ -89,12 +93,27 @@
   .modal-actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .modal-actions .btn { flex: 1; min-width: 100px; justify-content: center; font-size: 0.85rem; }
   .gps-warn { background: var(--amber-light); border: 1px solid #EF9F27; border-radius: 8px; padding: 0.7rem 1rem; font-size: 0.85rem; color: var(--amber); margin-bottom: 0.8rem; display: none; }
-  .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: var(--gray); color: #fff; padding: 0.6rem 1.2rem; border-radius: 20px; font-family: var(--font-mono); font-size: 0.82rem; z-index: 2000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: var(--gray); color: #fff; padding: 0.6rem 1.2rem; border-radius: 20px; font-family: var(--font-mono); font-size: 0.82rem; z-index: 2000; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; }
   .toast.show { opacity: 1; }
   .loading { text-align: center; padding: 2rem; color: var(--muted); font-family: var(--font-mono); font-size: 0.85rem; }
+
+  /* ── Navigatie-paneel ── */
+  #nav-panel { background: var(--surface); border: 2px solid var(--teal); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; display: none; }
+  .nav-compass { font-size: 3rem; text-align: center; line-height: 1; margin-bottom: 0.3rem; transition: transform 0.4s ease; }
+  .nav-info { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 0.8rem; }
+  .nav-info-item { text-align: center; }
+  .nav-info-label { font-size: 0.68rem; color: var(--muted); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.05em; }
+  .nav-info-value { font-size: 1.1rem; font-family: var(--font-mono); font-weight: 500; color: var(--teal); }
+  .nav-progress { background: var(--gray-light); border-radius: 6px; height: 6px; margin-bottom: 0.5rem; overflow: hidden; }
+  .nav-progress-fill { background: var(--teal); height: 100%; border-radius: 6px; transition: width 0.5s ease; }
+  .nav-status { font-size: 0.82rem; font-family: var(--font-mono); color: var(--muted); text-align: center; }
+  .nav-status.on-route { color: var(--teal); }
+  .nav-status.off-route { color: var(--red); }
+
   @media (max-width: 480px) {
-    .detail-stats { grid-template-columns: repeat(2, 1fr); }
+    .detail-stats, .detail-stats-2 { grid-template-columns: repeat(3, 1fr); }
     .nav-tab { padding: 5px 10px; font-size: 0.78rem; }
+    .stat-value { font-size: 1.2rem; }
   }
 </style>
 </head>
@@ -111,6 +130,7 @@
   </div>
 </header>
 
+<!-- ── OPNEMEN ── -->
 <div id="view-record" class="view active">
   <div id="gps-warn" class="gps-warn">⚠ GPS niet beschikbaar. Controleer je locatie-instellingen.</div>
   <div class="status-bar">
@@ -118,6 +138,29 @@
     <span id="status-text">Klaar om te starten</span>
   </div>
   <div id="map"></div>
+
+  <!-- Navigatiepaneel (verborgen tenzij actief) -->
+  <div id="nav-panel">
+    <div class="nav-compass" id="nav-arrow">🧭</div>
+    <div class="nav-info">
+      <div class="nav-info-item">
+        <div class="nav-info-label">Afstand tot pad</div>
+        <div class="nav-info-value" id="nav-dist-path">—</div>
+      </div>
+      <div class="nav-info-item">
+        <div class="nav-info-label">Nog te lopen</div>
+        <div class="nav-info-value" id="nav-dist-left">—</div>
+      </div>
+      <div class="nav-info-item">
+        <div class="nav-info-label">Voortgang</div>
+        <div class="nav-info-value" id="nav-pct">0%</div>
+      </div>
+    </div>
+    <div class="nav-progress"><div class="nav-progress-fill" id="nav-bar" style="width:0%"></div></div>
+    <div class="nav-status" id="nav-status">Bezig met navigeren…</div>
+    <button class="btn btn-stop" onclick="stopNavigation()" style="margin-top:0.8rem;">⏹ Stop navigatie</button>
+  </div>
+
   <div class="stat-row">
     <div class="stat-card">
       <div class="stat-label">Afstand</div>
@@ -135,9 +178,11 @@
       <div class="stat-unit">min/km</div>
     </div>
   </div>
+
   <button class="btn btn-start" id="btn-start" onclick="startRecording()">▶ Start wandeling</button>
   <button class="btn btn-pause" id="btn-pause" onclick="pauseRecording()" style="display:none;margin-top:8px;">⏸ Pauzeer</button>
   <button class="btn btn-stop" id="btn-stop" onclick="stopRecording()" style="display:none;margin-top:8px;">⏹ Stop &amp; Opslaan</button>
+
   <div class="save-panel" id="save-panel" style="display:none;">
     <h3>Route opslaan</h3>
     <div class="form-row">
@@ -159,11 +204,12 @@
         <option value="Bergen">Bergen</option>
       </select>
     </div>
-    <button class="btn btn-start" onclick="saveRoute()">💾 Opslaan in cloud</button>
+    <button class="btn btn-start" id="btn-save" onclick="saveRoute()">💾 Opslaan in cloud</button>
     <button class="btn btn-outline" onclick="discardRoute()" style="width:100%;margin-top:8px;justify-content:center;">Weggooien</button>
   </div>
 </div>
 
+<!-- ── ROUTES LIJST ── -->
 <div id="view-routes" class="view">
   <div class="routes-header">
     <h2>Mijn Routes</h2>
@@ -172,6 +218,7 @@
   <div id="routes-list"><div class="loading">Routes laden…</div></div>
 </div>
 
+<!-- ── ROUTE DETAIL ── -->
 <div id="view-detail" class="view">
   <div class="detail-header">
     <button class="btn btn-outline" onclick="showView('routes')" style="padding:6px 12px;">← Terug</button>
@@ -182,17 +229,23 @@
   <div class="detail-stats">
     <div class="stat-card"><div class="stat-label">Afstand</div><div class="stat-value" id="d-dist">—</div><div class="stat-unit">km</div></div>
     <div class="stat-card"><div class="stat-label">Duur</div><div class="stat-value" id="d-time">—</div><div class="stat-unit">h:min</div></div>
+    <div class="stat-card"><div class="stat-label">Gem. snelheid</div><div class="stat-value" id="d-speed">—</div><div class="stat-unit">km/u</div></div>
+  </div>
+  <div class="detail-stats-2">
     <div class="stat-card"><div class="stat-label">Tempo</div><div class="stat-value" id="d-pace">—</div><div class="stat-unit">min/km</div></div>
-    <div class="stat-card"><div class="stat-label">Datum</div><div class="stat-value" id="d-date" style="font-size:0.9rem;">—</div></div>
+    <div class="stat-card"><div class="stat-label">Begintijd</div><div class="stat-value" id="d-starttime" style="font-size:1rem;">—</div></div>
+    <div class="stat-card"><div class="stat-label">Datum</div><div class="stat-value" id="d-date" style="font-size:0.85rem;">—</div></div>
   </div>
   <div id="d-notes-block" style="display:none;background:var(--gray-light);border-radius:8px;padding:0.8rem;margin-bottom:1rem;font-size:0.9rem;"></div>
   <div class="action-row">
-    <button class="btn btn-green-outline" onclick="openGoogleMaps()">🗺 Google Maps</button>
+    <button class="btn btn-green-outline" onclick="openGoogleMaps()">🗺 Maps</button>
     <button class="btn btn-green-outline" onclick="openShareModal()">🔗 Delen</button>
     <button class="btn btn-green-outline" onclick="exportGPX()">⬇ GPX</button>
   </div>
+  <button class="btn btn-teal" onclick="startNavigation()" style="margin-top:4px;">🧭 Loop deze route opnieuw</button>
 </div>
 
+<!-- ── SHARE MODAL ── -->
 <div class="modal-overlay" id="share-modal">
   <div class="modal">
     <h3>🔗 Route delen</h3>
@@ -229,61 +282,49 @@ const routesCol = collection(db, 'routes');
 // ── State ──────────────────────────────────────────────────────────────────
 let map, recordLine, watchId;
 let recording = false, paused = false;
-let coords = [], startTime, pauseStart, totalPausedMs = 0, timerInterval;
+let coords = [], startTime, routeStartTime, pauseStart, totalPausedMs = 0, timerInterval;
 let detailMap, currentRouteId;
 let cachedRoutes = [];
 
-// ── Firebase helpers ───────────────────────────────────────────────────────
-function setSyncState(state) {
-  const dot = document.getElementById('sync-dot');
-  dot.className = 'sync-dot' + (state ? ' ' + state : '');
-}
+// Navigatie state
+let navigating = false;
+let navRoute = null;       // array van {lat,lng}
+let navWaypointIdx = 0;    // index van het dichtstbijzijnde waypoint
+let navWatchId = null;
+let navMarker = null;
+let navRouteLine = null;
+let navArrowMarker = null;
 
+// ── Firebase ───────────────────────────────────────────────────────────────
+function setSyncState(s) {
+  document.getElementById('sync-dot').className = 'sync-dot' + (s ? ' '+s : '');
+}
 async function loadRoutes() {
   setSyncState('syncing');
   try {
-    const q = query(routesCol, orderBy('date', 'desc'));
-    const snap = await getDocs(q);
+    const snap = await getDocs(query(routesCol, orderBy('date','desc')));
     cachedRoutes = snap.docs.map(d => ({ ...d.data(), id: d.id }));
-    setSyncState('');
-    return cachedRoutes;
-  } catch (e) {
-    setSyncState('error');
-    showToast('Laadprobleem — controleer verbinding');
-    return [];
-  }
+    setSyncState(''); return cachedRoutes;
+  } catch(e) { setSyncState('error'); showToast('Laadprobleem'); return []; }
 }
-
 async function addRoute(route) {
   setSyncState('syncing');
   try {
-    const docRef = await addDoc(routesCol, route);
-    route.id = docRef.id;
-    cachedRoutes.unshift(route);
-    setSyncState('');
-    showToast('Route opgeslagen in cloud ☁');
-    return route;
-  } catch (e) {
-    setSyncState('error');
-    showToast('Opslaan mislukt — controleer verbinding');
-    return null;
-  }
+    const ref = await addDoc(routesCol, route);
+    route.id = ref.id; cachedRoutes.unshift(route);
+    setSyncState(''); showToast('Route opgeslagen ☁'); return route;
+  } catch(e) { setSyncState('error'); showToast('Opslaan mislukt'); return null; }
 }
-
 async function removeRoute(id) {
   setSyncState('syncing');
   try {
-    await deleteDoc(doc(db, 'routes', id));
+    await deleteDoc(doc(db,'routes',id));
     cachedRoutes = cachedRoutes.filter(r => r.id !== id);
-    setSyncState('');
-    showToast('Route verwijderd');
-  } catch (e) {
-    setSyncState('error');
-    showToast('Verwijderen mislukt');
-  }
+    setSyncState(''); showToast('Route verwijderd');
+  } catch(e) { setSyncState('error'); showToast('Verwijderen mislukt'); }
 }
 
-// ── Map init ───────────────────────────────────────────────────────────────
+// ── Kaart init ─────────────────────────────────────────────────────────────
 function initMap() {
   if (map) return;
   map = L.map('map').setView([52.37, 4.9], 13);
@@ -293,14 +334,16 @@ function initMap() {
   recordLine = L.polyline([], { color: '#3B6D11', weight: 4, opacity: 0.8 }).addTo(map);
 }
 
-// ── Recording ─────────────────────────────────────────────────────────────
+// ── Opnemen ────────────────────────────────────────────────────────────────
 window.startRecording = function() {
   initMap();
   if (!navigator.geolocation) { document.getElementById('gps-warn').style.display='block'; return; }
-  coords = []; totalPausedMs = 0; startTime = Date.now();
+  coords = []; totalPausedMs = 0;
+  startTime = Date.now();
+  routeStartTime = new Date().toISOString(); // begintijd vastleggen
   recording = true; paused = false;
   recordLine.setLatLngs([]);
-  setStatus('Aan het opnemen…', 'recording');
+  setStatus('Aan het opnemen…','recording');
   watchId = navigator.geolocation.watchPosition(onPosition, onGpsError, {
     enableHighAccuracy: true, maximumAge: 0, timeout: 15000
   });
@@ -320,14 +363,13 @@ function onPosition(pos) {
   map.setView([lat, lng], map.getZoom() < 15 ? 15 : map.getZoom());
   updateStats();
 }
-
 function onGpsError() { document.getElementById('gps-warn').style.display = 'block'; }
 
 window.pauseRecording = function() {
   paused = !paused;
   document.getElementById('btn-pause').textContent = paused ? '▶ Hervat' : '⏸ Pauzeer';
-  if (paused) { pauseStart = Date.now(); setStatus('Gepauzeerd', 'paused'); }
-  else { totalPausedMs += Date.now() - pauseStart; setStatus('Aan het opnemen…', 'recording'); }
+  if (paused) { pauseStart = Date.now(); setStatus('Gepauzeerd','paused'); }
+  else { totalPausedMs += Date.now() - pauseStart; setStatus('Aan het opnemen…','recording'); }
 };
 
 window.stopRecording = function() {
@@ -336,10 +378,10 @@ window.stopRecording = function() {
   clearInterval(timerInterval);
   document.getElementById('btn-pause').style.display = 'none';
   document.getElementById('btn-stop').style.display = 'none';
-  setStatus('Opname gestopt', '');
+  setStatus('Opname gestopt','');
   if (coords.length > 1) {
     document.getElementById('save-panel').style.display = 'block';
-    const d = new Date().toLocaleDateString('nl-NL', {weekday:'long', day:'numeric', month:'long'});
+    const d = new Date().toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'});
     document.getElementById('route-name').value = 'Wandeling ' + d;
   } else {
     document.getElementById('btn-start').style.display = 'block';
@@ -349,17 +391,16 @@ window.stopRecording = function() {
 
 function updateTimer() {
   if (paused) return;
-  document.getElementById('disp-time').textContent = fmtTime(Math.floor((Date.now() - startTime - totalPausedMs) / 1000));
+  document.getElementById('disp-time').textContent = fmtTime(Math.floor((Date.now()-startTime-totalPausedMs)/1000));
   updateStats();
 }
-
 function updateStats() {
   const dist = calcDist(coords);
   document.getElementById('disp-dist').textContent = dist.toFixed(2);
-  const elapsed = (Date.now() - startTime - totalPausedMs) / 1000;
+  const elapsed = (Date.now()-startTime-totalPausedMs)/1000;
   if (dist > 0.1) {
-    const pace = elapsed / 60 / dist;
-    document.getElementById('disp-pace').textContent = Math.floor(pace) + ':' + String(Math.round((pace % 1) * 60)).padStart(2,'0');
+    const pace = elapsed/60/dist;
+    document.getElementById('disp-pace').textContent = Math.floor(pace)+':'+String(Math.round((pace%1)*60)).padStart(2,'0');
   }
 }
 
@@ -367,48 +408,47 @@ window.saveRoute = async function() {
   const name = document.getElementById('route-name').value.trim() || 'Wandeling';
   const notes = document.getElementById('route-notes').value.trim();
   const terrain = document.getElementById('route-terrain').value;
-  const elapsed = Math.round((Date.now() - startTime - totalPausedMs) / 1000);
+  const elapsed = Math.round((Date.now()-startTime-totalPausedMs)/1000);
   const dist = calcDist(coords);
-  const pace = elapsed > 0 && dist > 0 ? elapsed / 60 / dist : 0;
+  const pace = elapsed > 0 && dist > 0 ? elapsed/60/dist : 0;
+  const speedKmh = elapsed > 0 && dist > 0 ? dist/(elapsed/3600) : 0;
 
   const route = {
     name, notes, terrain,
     date: new Date().toISOString(),
+    startTime: routeStartTime,       // begintijd
     durationSec: elapsed,
     distanceKm: dist,
     paceMinKm: pace,
+    speedKmh,                         // gemiddelde snelheid
     coords: coords.map(c => ({ lat: c.lat, lng: c.lng }))
   };
 
-  document.querySelector('#save-panel .btn-start').textContent = '⏳ Opslaan…';
+  document.getElementById('btn-save').textContent = '⏳ Opslaan…';
   await addRoute(route);
 
   coords = []; recording = false;
   recordLine.setLatLngs([]);
-  document.getElementById('disp-dist').textContent = '0.00';
-  document.getElementById('disp-time').textContent = '00:00';
-  document.getElementById('disp-pace').textContent = '—';
+  ['disp-dist','disp-time','disp-pace'].forEach((id,i) => document.getElementById(id).textContent = i===0?'0.00':i===1?'00:00':'—');
   document.getElementById('save-panel').style.display = 'none';
   document.getElementById('btn-start').style.display = 'block';
   document.getElementById('route-name').value = '';
   document.getElementById('route-notes').value = '';
-  document.querySelector('#save-panel .btn-start').textContent = '💾 Opslaan in cloud';
-  setStatus('Klaar om te starten', '');
+  document.getElementById('btn-save').textContent = '💾 Opslaan in cloud';
+  setStatus('Klaar om te starten','');
   showView('routes');
 };
 
 window.discardRoute = function() {
   coords = []; recording = false;
   recordLine && recordLine.setLatLngs([]);
-  document.getElementById('disp-dist').textContent = '0.00';
-  document.getElementById('disp-time').textContent = '00:00';
-  document.getElementById('disp-pace').textContent = '—';
+  ['disp-dist','disp-time','disp-pace'].forEach((id,i) => document.getElementById(id).textContent = i===0?'0.00':i===1?'00:00':'—');
   document.getElementById('save-panel').style.display = 'none';
   document.getElementById('btn-start').style.display = 'block';
-  setStatus('Klaar om te starten', '');
+  setStatus('Klaar om te starten','');
 };
 
-// ── Routes list ────────────────────────────────────────────────────────────
+// ── Routes lijst ───────────────────────────────────────────────────────────
 async function renderRoutes() {
   document.getElementById('routes-list').innerHTML = '<div class="loading">Routes laden…</div>';
   const routes = await loadRoutes();
@@ -427,11 +467,11 @@ async function renderRoutes() {
       <div class="route-stats">
         <div class="route-stat">📍 <strong>${r.distanceKm.toFixed(2)} km</strong></div>
         <div class="route-stat">⏱ <strong>${fmtTime(r.durationSec)}</strong></div>
-        <div class="route-stat">🚶 <strong>${fmtPace(r.paceMinKm)}</strong> /km</div>
+        <div class="route-stat">⚡ <strong>${(r.speedKmh||0).toFixed(1)} km/u</strong></div>
       </div>
       <div style="margin-top:6px">
         <span class="tag tag-teal">${esc(r.terrain)}</span>
-        <span class="tag tag-green">${r.coords.length} punten</span>
+        ${r.startTime ? '<span class="tag tag-green">'+fmtStartTime(r.startTime)+'</span>' : ''}
       </div>
     </div>
   `).join('');
@@ -446,19 +486,20 @@ window.openRoute = function(id) {
   document.getElementById('d-dist').textContent = r.distanceKm.toFixed(2);
   document.getElementById('d-time').textContent = fmtTime(r.durationSec);
   document.getElementById('d-pace').textContent = fmtPace(r.paceMinKm);
+  document.getElementById('d-speed').textContent = (r.speedKmh||0).toFixed(1);
+  document.getElementById('d-starttime').textContent = r.startTime ? fmtStartTime(r.startTime) : '—';
   document.getElementById('d-date').textContent = fmtDate(r.date);
   const nb = document.getElementById('d-notes-block');
-  if (r.notes) { nb.style.display = 'block'; nb.textContent = r.notes; }
-  else { nb.style.display = 'none'; }
+  if (r.notes) { nb.style.display='block'; nb.textContent=r.notes; } else { nb.style.display='none'; }
   showView('detail');
   setTimeout(() => {
     if (detailMap) { detailMap.remove(); detailMap = null; }
     detailMap = L.map('detail-map');
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(detailMap);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(detailMap);
     const lls = r.coords.map(c => [c.lat, c.lng]);
-    const line = L.polyline(lls, { color: '#3B6D11', weight: 4 }).addTo(detailMap);
+    const line = L.polyline(lls,{color:'#3B6D11',weight:4}).addTo(detailMap);
     if (lls.length) {
-      detailMap.fitBounds(line.getBounds(), { padding: [20, 20] });
+      detailMap.fitBounds(line.getBounds(),{padding:[20,20]});
       L.marker(lls[0]).addTo(detailMap).bindPopup('Start').openPopup();
       L.marker(lls[lls.length-1]).addTo(detailMap).bindPopup('Einde');
     }
@@ -471,125 +512,249 @@ window.deleteCurrentRoute = async function() {
   showView('routes');
 };
 
+// ── Navigatie (route herlopen) ─────────────────────────────────────────────
+window.startNavigation = function() {
+  const r = cachedRoutes.find(x => x.id === currentRouteId);
+  if (!r || r.coords.length < 2) { showToast('Te weinig waypoints'); return; }
+  navRoute = r.coords;
+  navWaypointIdx = 0;
+  navigating = true;
+
+  showView('record');
+  initMap();
+
+  // Toon de te lopen route op de kaart
+  if (navRouteLine) { map.removeLayer(navRouteLine); }
+  navRouteLine = L.polyline(navRoute.map(c=>[c.lat,c.lng]), {
+    color: '#1D9E75', weight: 5, opacity: 0.5, dashArray: '8 6'
+  }).addTo(map);
+  map.fitBounds(navRouteLine.getBounds(), {padding:[20,20]});
+
+  // Start-/eindmarker
+  L.marker([navRoute[0].lat, navRoute[0].lng]).addTo(map).bindPopup('Start').openPopup();
+  L.marker([navRoute[navRoute.length-1].lat, navRoute[navRoute.length-1].lng]).addTo(map).bindPopup('Einde');
+
+  document.getElementById('nav-panel').style.display = 'block';
+  document.getElementById('btn-start').style.display = 'none';
+  setStatus('Navigeren…','navigating');
+
+  navWatchId = navigator.geolocation.watchPosition(onNavPosition, onGpsError, {
+    enableHighAccuracy: true, maximumAge: 0, timeout: 15000
+  });
+};
+
+function onNavPosition(pos) {
+  const { latitude: lat, longitude: lng } = pos.coords;
+  const me = { lat, lng };
+
+  // Teken huidige positie
+  if (navMarker) { map.removeLayer(navMarker); }
+  navMarker = L.circleMarker([lat,lng],{radius:8,color:'#0F6E56',fillColor:'#1D9E75',fillOpacity:1,weight:2}).addTo(map);
+  map.setView([lat,lng], map.getZoom() < 15 ? 15 : map.getZoom());
+
+  // Vind het dichtstbijzijnde punt op de route na huidige index
+  let closestDist = Infinity, closestIdx = navWaypointIdx;
+  const searchFrom = Math.max(0, navWaypointIdx - 3);
+  for (let i = searchFrom; i < navRoute.length; i++) {
+    const d = haversineDist(me, navRoute[i]);
+    if (d < closestDist) { closestDist = d; closestIdx = i; }
+  }
+  navWaypointIdx = closestIdx;
+
+  // Bepaal het doelwaypoint (een stukje vooruit)
+  const targetIdx = Math.min(navWaypointIdx + 3, navRoute.length - 1);
+  const target = navRoute[targetIdx];
+
+  // Richting naar target
+  const bearing = calcBearing(me, target);
+  const arrow = bearingToArrow(bearing);
+  document.getElementById('nav-arrow').textContent = arrow;
+
+  // Afstand tot pad (dichtstbijzijnde punt)
+  const distToPath = closestDist * 1000; // meter
+  document.getElementById('nav-dist-path').textContent = distToPath < 1000
+    ? Math.round(distToPath) + ' m'
+    : (distToPath/1000).toFixed(1) + ' km';
+
+  // Resterende afstand (van huidig waypoint tot einde)
+  const remaining = calcDist(navRoute.slice(navWaypointIdx));
+  document.getElementById('nav-dist-left').textContent = remaining.toFixed(2) + ' km';
+
+  // Voortgang
+  const done = calcDist(navRoute.slice(0, navWaypointIdx + 1));
+  const total = calcDist(navRoute);
+  const pct = total > 0 ? Math.round((done/total)*100) : 0;
+  document.getElementById('nav-pct').textContent = pct + '%';
+  document.getElementById('nav-bar').style.width = pct + '%';
+
+  // Status: op route of ernaast?
+  const statusEl = document.getElementById('nav-status');
+  if (distToPath < 30) {
+    statusEl.textContent = '✓ Je loopt op de route';
+    statusEl.className = 'nav-status on-route';
+  } else if (distToPath < 100) {
+    statusEl.textContent = '↩ Kleine afwijking — ga richting de pijl';
+    statusEl.className = 'nav-status';
+  } else {
+    statusEl.textContent = '⚠ Je bent van de route — volg de pijl';
+    statusEl.className = 'nav-status off-route';
+  }
+
+  // Klaar?
+  if (pct >= 98 || (navWaypointIdx >= navRoute.length - 2 && distToPath < 30)) {
+    statusEl.textContent = '🎉 Je hebt de route voltooid!';
+    statusEl.className = 'nav-status on-route';
+    setTimeout(stopNavigation, 3000);
+  }
+}
+
+window.stopNavigation = function() {
+  if (navWatchId) { navigator.geolocation.clearWatch(navWatchId); navWatchId = null; }
+  if (navMarker) { map.removeLayer(navMarker); navMarker = null; }
+  if (navRouteLine) { map.removeLayer(navRouteLine); navRouteLine = null; }
+  navigating = false; navRoute = null;
+  document.getElementById('nav-panel').style.display = 'none';
+  document.getElementById('btn-start').style.display = 'block';
+  setStatus('Klaar om te starten','');
+  showToast('Navigatie gestopt');
+};
+
+// Richting in graden (0 = noord, 90 = oost)
+function calcBearing(from, to) {
+  const dLng = deg2rad(to.lng - from.lng);
+  const lat1 = deg2rad(from.lat), lat2 = deg2rad(to.lat);
+  const y = Math.sin(dLng)*Math.cos(lat2);
+  const x = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLng);
+  return (Math.atan2(y,x)*180/Math.PI + 360) % 360;
+}
+
+function bearingToArrow(b) {
+  const arrows = ['⬆','↗','➡','↘','⬇','↙','⬅','↖'];
+  return arrows[Math.round(b/45) % 8];
+}
+
 // ── Google Maps ────────────────────────────────────────────────────────────
 window.openGoogleMaps = function() {
   const r = cachedRoutes.find(x => x.id === currentRouteId);
   if (!r || !r.coords.length) return;
   const start = r.coords[0], end = r.coords[r.coords.length-1];
-  const step = Math.max(1, Math.floor(r.coords.length / 8));
-  const wps = r.coords.filter((_,i) => i > 0 && i < r.coords.length-1 && i % step === 0)
+  const step = Math.max(1, Math.floor(r.coords.length/8));
+  const wps = r.coords.filter((_,i) => i>0 && i<r.coords.length-1 && i%step===0)
     .map(c => `${c.lat},${c.lng}`).slice(0,7).join('|');
-  window.open(`https://www.google.com/maps/dir/?api=1&origin=${start.lat},${start.lng}&destination=${end.lat},${end.lng}${wps?'&waypoints='+wps:''}&travelmode=walking`, '_blank');
+  window.open(`https://www.google.com/maps/dir/?api=1&origin=${start.lat},${start.lng}&destination=${end.lat},${end.lng}${wps?'&waypoints='+wps:''}&travelmode=walking`,'_blank');
 };
 
-// ── Share ──────────────────────────────────────────────────────────────────
+// ── Delen ──────────────────────────────────────────────────────────────────
 window.openShareModal = function() {
   const r = cachedRoutes.find(x => x.id === currentRouteId);
   if (!r) return;
   const encoded = btoa(encodeURIComponent(JSON.stringify({
-    n: r.name, d: r.distanceKm, t: r.durationSec, p: r.paceMinKm,
-    dt: r.date, te: r.terrain, no: r.notes,
-    c: r.coords.map(c => [+(c.lat.toFixed(5)), +(c.lng.toFixed(5))])
+    n:r.name, d:r.distanceKm, t:r.durationSec, p:r.paceMinKm, sp:r.speedKmh||0,
+    dt:r.date, st:r.startTime||'', te:r.terrain, no:r.notes,
+    c:r.coords.map(c=>[+(c.lat.toFixed(5)),+(c.lng.toFixed(5))])
   })));
-  const link = window.location.href.split('?')[0] + '?route=' + encoded;
-  document.getElementById('share-link-text').textContent = link;
+  document.getElementById('share-link-text').textContent = window.location.href.split('?')[0]+'?route='+encoded;
   document.getElementById('share-modal').classList.add('open');
 };
-
 window.closeModal = function() { document.getElementById('share-modal').classList.remove('open'); };
-
 window.copyShareLink = function() {
   const txt = document.getElementById('share-link-text').textContent;
-  navigator.clipboard.writeText(txt).then(() => showToast('Link gekopieerd!')).catch(() => {
-    const ta = document.createElement('textarea'); ta.value = txt;
+  navigator.clipboard.writeText(txt).then(()=>showToast('Link gekopieerd!')).catch(()=>{
+    const ta=document.createElement('textarea'); ta.value=txt;
     document.body.appendChild(ta); ta.select(); document.execCommand('copy');
     document.body.removeChild(ta); showToast('Link gekopieerd!');
   });
 };
-
 window.shareWhatsApp = function() {
-  window.open('https://wa.me/?text=' + encodeURIComponent('Bekijk mijn wandelroute: ' + document.getElementById('share-link-text').textContent), '_blank');
+  window.open('https://wa.me/?text='+encodeURIComponent('Bekijk mijn wandelroute: '+document.getElementById('share-link-text').textContent),'_blank');
 };
-
 window.shareEmail = function() {
-  const r = cachedRoutes.find(x => x.id === currentRouteId);
+  const r = cachedRoutes.find(x=>x.id===currentRouteId);
   const link = document.getElementById('share-link-text').textContent;
-  const body = `Hoi!\n\nIk wil mijn wandelroute met je delen:\n\n📍 ${r.name}\n📏 ${r.distanceKm.toFixed(2)} km\n⏱ ${fmtTime(r.durationSec)}\n🚶 ${fmtPace(r.paceMinKm)} min/km\n\nBekijk de route: ${link}`;
-  window.open('mailto:?subject=' + encodeURIComponent('Wandelroute: ' + r.name) + '&body=' + encodeURIComponent(body));
+  const body = `Hoi!\n\nIk wil mijn wandelroute met je delen:\n\n📍 ${r.name}\n📏 ${r.distanceKm.toFixed(2)} km\n⏱ ${fmtTime(r.durationSec)}\n⚡ ${(r.speedKmh||0).toFixed(1)} km/u\n\nBekijk de route: ${link}`;
+  window.open('mailto:?subject='+encodeURIComponent('Wandelroute: '+r.name)+'&body='+encodeURIComponent(body));
 };
 
 // ── GPX export ─────────────────────────────────────────────────────────────
 window.exportGPX = function() {
-  const r = cachedRoutes.find(x => x.id === currentRouteId);
+  const r = cachedRoutes.find(x=>x.id===currentRouteId);
   if (!r) return;
-  const pts = r.coords.map(c => `    <trkpt lat="${c.lat}" lon="${c.lng}"></trkpt>`).join('\n');
+  const pts = r.coords.map(c=>`    <trkpt lat="${c.lat}" lon="${c.lng}"></trkpt>`).join('\n');
   const gpx = `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="WandelLog">\n  <trk>\n    <name>${esc(r.name)}</name>\n    <trkseg>\n${pts}\n    </trkseg>\n  </trk>\n</gpx>`;
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([gpx], { type: 'application/gpx+xml' }));
-  a.download = r.name.replace(/[^a-z0-9]/gi, '_') + '.gpx';
-  a.click();
+  a.href = URL.createObjectURL(new Blob([gpx],{type:'application/gpx+xml'}));
+  a.download = r.name.replace(/[^a-z0-9]/gi,'_')+'.gpx'; a.click();
 };
 
-// ── Shared route via URL ───────────────────────────────────────────────────
+// ── Gedeelde route via URL ─────────────────────────────────────────────────
 async function checkSharedRoute() {
   const enc = new URLSearchParams(window.location.search).get('route');
   if (!enc) return;
   try {
     const data = JSON.parse(decodeURIComponent(atob(enc)));
     const r = {
-      name: data.n + ' (gedeeld)', notes: data.no || '', terrain: data.te || 'Onbekend',
-      date: data.dt, durationSec: data.t, distanceKm: data.d, paceMinKm: data.p,
-      coords: data.c.map(c => ({ lat: c[0], lng: c[1] }))
+      name: data.n+' (gedeeld)', notes: data.no||'', terrain: data.te||'Onbekend',
+      date: data.dt, startTime: data.st||'', durationSec: data.t,
+      distanceKm: data.d, paceMinKm: data.p, speedKmh: data.sp||0,
+      coords: data.c.map(c=>({lat:c[0],lng:c[1]}))
     };
     if (confirm(`Gedeelde route ontvangen: "${r.name}"\n${r.distanceKm.toFixed(2)} km · ${fmtTime(r.durationSec)}\n\nToevoegen aan jouw routes?`)) {
       await addRoute(r);
     }
-    history.replaceState({}, '', window.location.pathname);
+    history.replaceState({},'',window.location.pathname);
     showView('routes');
   } catch(e) { console.warn('Ongeldige route-link'); }
 }
 
-// ── View management ────────────────────────────────────────────────────────
+// ── Views ──────────────────────────────────────────────────────────────────
 window.showView = function(name) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('view-' + name).classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
   const tabs = document.querySelectorAll('.nav-tab');
-  if (name === 'record') { tabs[0].classList.add('active'); setTimeout(initMap, 100); }
-  if (name === 'routes') { tabs[1].classList.add('active'); renderRoutes(); }
+  if (name==='record') { tabs[0].classList.add('active'); setTimeout(initMap,100); }
+  if (name==='routes') { tabs[1].classList.add('active'); renderRoutes(); }
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function calcDist(pts) {
-  let d = 0;
-  for (let i = 1; i < pts.length; i++) {
-    const R = 6371, dLat = deg2rad(pts[i].lat - pts[i-1].lat), dLng = deg2rad(pts[i].lng - pts[i-1].lng);
-    const a = Math.sin(dLat/2)**2 + Math.cos(deg2rad(pts[i-1].lat)) * Math.cos(deg2rad(pts[i].lat)) * Math.sin(dLng/2)**2;
-    d += R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  let d=0;
+  for(let i=1;i<pts.length;i++){
+    const R=6371,dLat=deg2rad(pts[i].lat-pts[i-1].lat),dLng=deg2rad(pts[i].lng-pts[i-1].lng);
+    const a=Math.sin(dLat/2)**2+Math.cos(deg2rad(pts[i-1].lat))*Math.cos(deg2rad(pts[i].lat))*Math.sin(dLng/2)**2;
+    d+=R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
   }
   return d;
 }
-function deg2rad(d) { return d * Math.PI / 180; }
-function fmtTime(sec) {
-  const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
-  return h > 0 ? `${h}:${String(m).padStart(2,'0')}` : `${m}:${String(s).padStart(2,'0')}`;
+function haversineDist(a,b) {
+  const R=6371,dLat=deg2rad(b.lat-a.lat),dLng=deg2rad(b.lng-a.lng);
+  const x=Math.sin(dLat/2)**2+Math.cos(deg2rad(a.lat))*Math.cos(deg2rad(b.lat))*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
 }
-function fmtPace(p) {
-  if (!p || p === 0) return '—';
-  return Math.floor(p) + ':' + String(Math.round((p%1)*60)).padStart(2,'0');
+function deg2rad(d){return d*Math.PI/180;}
+function fmtTime(sec){
+  const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;
+  return h>0?`${h}:${String(m).padStart(2,'0')}`:`${m}:${String(s).padStart(2,'0')}`;
 }
-function fmtDate(iso) {
-  return new Date(iso).toLocaleDateString('nl-NL', {weekday:'short',day:'numeric',month:'short',year:'numeric'});
+function fmtPace(p){
+  if(!p||p===0)return'—';
+  return Math.floor(p)+':'+String(Math.round((p%1)*60)).padStart(2,'0');
 }
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function setStatus(txt, cls) {
-  document.getElementById('status-text').textContent = txt;
-  document.getElementById('status-dot').className = 'status-dot' + (cls ? ' ' + cls : '');
+function fmtDate(iso){
+  return new Date(iso).toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
 }
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+function fmtStartTime(iso){
+  return new Date(iso).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function setStatus(txt,cls){
+  document.getElementById('status-text').textContent=txt;
+  document.getElementById('status-dot').className='status-dot'+(cls?' '+cls:'');
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
 }
 
 // ── Boot ───────────────────────────────────────────────────────────────────
