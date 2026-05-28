@@ -286,6 +286,12 @@ let coords = [], startTime, routeStartTime, pauseStart, totalPausedMs = 0, timer
 let detailMap, currentRouteId;
 let cachedRoutes = [];
 
+// Auto-pauze state
+const AUTO_PAUSE_SEC = 10;       // seconden stilstand voor automatische pauze
+const MOVE_THRESHOLD_M = 5;      // minimale verplaatsing (meter) om als "lopen" te tellen
+let lastMoveTime = 0;            // timestamp van laatste beweging
+let autoPaused = false;          // automatisch gepauzeerd (niet handmatig)
+
 // Navigatie state
 let navigating = false;
 let navRoute = null;       // array van {lat,lng}
@@ -341,7 +347,8 @@ window.startRecording = function() {
   coords = []; totalPausedMs = 0;
   startTime = Date.now();
   routeStartTime = new Date().toISOString(); // begintijd vastleggen
-  recording = true; paused = false;
+  recording = true; paused = false; autoPaused = false;
+  lastMoveTime = Date.now();
   recordLine.setLatLngs([]);
   setStatus('Aan het opnemen…','recording');
   watchId = navigator.geolocation.watchPosition(onPosition, onGpsError, {
@@ -355,9 +362,28 @@ window.startRecording = function() {
 };
 
 function onPosition(pos) {
-  if (paused) return;
   const { latitude: lat, longitude: lng, accuracy } = pos.coords;
   if (accuracy > 50 && coords.length > 0) return;
+
+  // Controleer of er beweging is t.o.v. het vorige punt
+  const prev = coords.length > 0 ? coords[coords.length - 1] : null;
+  const movedM = prev ? haversineDist(prev, { lat, lng }) * 1000 : MOVE_THRESHOLD_M + 1;
+
+  if (movedM >= MOVE_THRESHOLD_M) {
+    lastMoveTime = Date.now();
+    // Automatische pauze opheffen zodra er weer beweging is
+    if (autoPaused) {
+      autoPaused = false;
+      paused = false;
+      totalPausedMs += Date.now() - pauseStart;
+      setStatus('Aan het opnemen…', 'recording');
+      document.getElementById('btn-pause').textContent = '⏸ Pauzeer';
+      showToast('Automatisch hervat 🚶');
+    }
+  }
+
+  if (paused) return;
+
   coords.push({ lat, lng, t: Date.now() });
   recordLine.setLatLngs(coords.map(c => [c.lat, c.lng]));
   map.setView([lat, lng], map.getZoom() < 15 ? 15 : map.getZoom());
@@ -367,9 +393,10 @@ function onGpsError() { document.getElementById('gps-warn').style.display = 'blo
 
 window.pauseRecording = function() {
   paused = !paused;
+  autoPaused = false; // handmatige actie overschrijft auto-pauze
   document.getElementById('btn-pause').textContent = paused ? '▶ Hervat' : '⏸ Pauzeer';
   if (paused) { pauseStart = Date.now(); setStatus('Gepauzeerd','paused'); }
-  else { totalPausedMs += Date.now() - pauseStart; setStatus('Aan het opnemen…','recording'); }
+  else { totalPausedMs += Date.now() - pauseStart; lastMoveTime = Date.now(); setStatus('Aan het opnemen…','recording'); }
 };
 
 window.stopRecording = function() {
@@ -391,6 +418,19 @@ window.stopRecording = function() {
 
 function updateTimer() {
   if (paused) return;
+
+  // Auto-pauze: stilstand langer dan AUTO_PAUSE_SEC seconden
+  const stilstaandMs = Date.now() - lastMoveTime;
+  if (stilstaandMs >= AUTO_PAUSE_SEC * 1000 && !autoPaused) {
+    autoPaused = true;
+    paused = true;
+    pauseStart = Date.now();
+    setStatus('Automatisch gepauzeerd (stilstand)', 'paused');
+    document.getElementById('btn-pause').textContent = '▶ Hervat';
+    showToast('Stilstand — automatisch gepauzeerd ⏸');
+    return;
+  }
+
   document.getElementById('disp-time').textContent = fmtTime(Math.floor((Date.now()-startTime-totalPausedMs)/1000));
   updateStats();
 }
