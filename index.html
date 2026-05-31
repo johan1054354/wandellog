@@ -34,7 +34,7 @@
   .view { display: none; padding: 1.2rem; max-width: 800px; margin: 0 auto; }
   .view.active { display: block; }
   #map { height: 300px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 1rem; background: var(--gray-light); }
-  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem; }
+  .stat-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1rem; }
   .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem 1rem; text-align: center; }
   .stat-label { font-size: 0.72rem; color: var(--muted); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.06em; }
   .stat-value { font-size: 1.5rem; font-family: var(--font-mono); font-weight: 500; color: var(--text); margin-top: 2px; }
@@ -177,6 +177,11 @@
       <div class="stat-value" id="disp-pace">—</div>
       <div class="stat-unit">min/km</div>
     </div>
+    <div class="stat-card">
+      <div class="stat-label">Stappen</div>
+      <div class="stat-value" id="disp-steps">0</div>
+      <div class="stat-unit">stappen</div>
+    </div>
   </div>
 
   <button class="btn btn-start" id="btn-start" onclick="startRecording()">▶ Start wandeling</button>
@@ -230,6 +235,7 @@
     <div class="stat-card"><div class="stat-label">Afstand</div><div class="stat-value" id="d-dist">—</div><div class="stat-unit">km</div></div>
     <div class="stat-card"><div class="stat-label">Duur</div><div class="stat-value" id="d-time">—</div><div class="stat-unit">h:min</div></div>
     <div class="stat-card"><div class="stat-label">Gem. snelheid</div><div class="stat-value" id="d-speed">—</div><div class="stat-unit">km/u</div></div>
+    <div class="stat-card"><div class="stat-label">Stappen</div><div class="stat-value" id="d-steps">—</div><div class="stat-unit">stappen</div></div>
   </div>
   <div class="detail-stats-2">
     <div class="stat-card"><div class="stat-label">Tempo</div><div class="stat-value" id="d-pace">—</div><div class="stat-unit">min/km</div></div>
@@ -285,6 +291,62 @@ let recording = false, paused = false;
 let coords = [], startTime, routeStartTime, pauseStart, totalPausedMs = 0, timerInterval;
 let detailMap, currentRouteId;
 let cachedRoutes = [];
+
+// Wake Lock (scherm wakker houden)
+let wakeLock = null;
+async function requestWakeLock() {
+  if (!('wakeLock' in navigator)) return;
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => { wakeLock = null; });
+  } catch(e) { console.warn('Wake lock niet gekregen:', e); }
+}
+function releaseWakeLock() {
+  if (wakeLock) { wakeLock.release(); wakeLock = null; }
+}
+// Heractiveer wake lock als scherm terugkomt (bijv. na telefoontje)
+document.addEventListener('visibilitychange', () => {
+  if (recording && !paused && document.visibilityState === 'visible') requestWakeLock();
+});
+
+// Stappenteller (DeviceMotion / Accelerometer)
+let stepCount = 0;
+let stepLastY = null;
+let stepCooldown = false;
+const STEP_THRESHOLD = 1.8;   // g-kracht drempel voor stap detectie
+const STEP_COOLDOWN_MS = 350; // minimale tijd tussen twee stappen (ms)
+
+function startPedometer() {
+  stepCount = 0; stepLastY = null; stepCooldown = false;
+  if (!window.DeviceMotionEvent) return;
+  // iOS 13+ vereist toestemming
+  if (typeof DeviceMotionEvent.requestPermission === 'function') {
+    DeviceMotionEvent.requestPermission().then(state => {
+      if (state === 'granted') window.addEventListener('devicemotion', onMotion);
+      else showToast('Stappenteller: geen toestemming');
+    }).catch(() => showToast('Stappenteller niet beschikbaar'));
+  } else {
+    window.addEventListener('devicemotion', onMotion);
+  }
+}
+function stopPedometer() {
+  window.removeEventListener('devicemotion', onMotion);
+}
+function onMotion(e) {
+  if (paused) return;
+  const acc = e.accelerationIncludingGravity;
+  if (!acc) return;
+  const magnitude = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
+  if (stepLastY === null) { stepLastY = magnitude; return; }
+  const delta = magnitude - stepLastY;
+  stepLastY = magnitude;
+  if (delta > STEP_THRESHOLD && !stepCooldown) {
+    stepCount++;
+    document.getElementById('disp-steps').textContent = stepCount;
+    stepCooldown = true;
+    setTimeout(() => { stepCooldown = false; }, STEP_COOLDOWN_MS);
+  }
+}
 
 // Auto-pauze state
 const AUTO_PAUSE_SEC = 10;       // seconden stilstand voor automatische pauze
@@ -351,6 +413,8 @@ window.startRecording = function() {
   lastMoveTime = Date.now();
   recordLine.setLatLngs([]);
   setStatus('Aan het opnemen…','recording');
+  requestWakeLock();
+  startPedometer();
   watchId = navigator.geolocation.watchPosition(onPosition, onGpsError, {
     enableHighAccuracy: true, maximumAge: 0, timeout: 15000
   });
@@ -403,6 +467,8 @@ window.stopRecording = function() {
   recording = false;
   navigator.geolocation.clearWatch(watchId);
   clearInterval(timerInterval);
+  releaseWakeLock();
+  stopPedometer();
   document.getElementById('btn-pause').style.display = 'none';
   document.getElementById('btn-stop').style.display = 'none';
   setStatus('Opname gestopt','');
@@ -456,20 +522,22 @@ window.saveRoute = async function() {
   const route = {
     name, notes, terrain,
     date: new Date().toISOString(),
-    startTime: routeStartTime,       // begintijd
+    startTime: routeStartTime,
     durationSec: elapsed,
     distanceKm: dist,
     paceMinKm: pace,
-    speedKmh,                         // gemiddelde snelheid
+    speedKmh,
+    steps: stepCount,
     coords: coords.map(c => ({ lat: c.lat, lng: c.lng }))
   };
 
   document.getElementById('btn-save').textContent = '⏳ Opslaan…';
   await addRoute(route);
 
-  coords = []; recording = false;
+  coords = []; recording = false; stepCount = 0;
   recordLine.setLatLngs([]);
   ['disp-dist','disp-time','disp-pace'].forEach((id,i) => document.getElementById(id).textContent = i===0?'0.00':i===1?'00:00':'—');
+  document.getElementById('disp-steps').textContent = '0';
   document.getElementById('save-panel').style.display = 'none';
   document.getElementById('btn-start').style.display = 'block';
   document.getElementById('route-name').value = '';
@@ -480,9 +548,11 @@ window.saveRoute = async function() {
 };
 
 window.discardRoute = function() {
-  coords = []; recording = false;
+  coords = []; recording = false; stepCount = 0;
+  stopPedometer(); releaseWakeLock();
   recordLine && recordLine.setLatLngs([]);
   ['disp-dist','disp-time','disp-pace'].forEach((id,i) => document.getElementById(id).textContent = i===0?'0.00':i===1?'00:00':'—');
+  document.getElementById('disp-steps').textContent = '0';
   document.getElementById('save-panel').style.display = 'none';
   document.getElementById('btn-start').style.display = 'block';
   setStatus('Klaar om te starten','');
@@ -508,6 +578,7 @@ async function renderRoutes() {
         <div class="route-stat">📍 <strong>${r.distanceKm.toFixed(2)} km</strong></div>
         <div class="route-stat">⏱ <strong>${fmtTime(r.durationSec)}</strong></div>
         <div class="route-stat">⚡ <strong>${(r.speedKmh||0).toFixed(1)} km/u</strong></div>
+        ${r.steps ? `<div class="route-stat">👣 <strong>${r.steps.toLocaleString('nl-NL')}</strong></div>` : ''}
       </div>
       <div style="margin-top:6px">
         <span class="tag tag-teal">${esc(r.terrain)}</span>
@@ -527,6 +598,7 @@ window.openRoute = function(id) {
   document.getElementById('d-time').textContent = fmtTime(r.durationSec);
   document.getElementById('d-pace').textContent = fmtPace(r.paceMinKm);
   document.getElementById('d-speed').textContent = (r.speedKmh||0).toFixed(1);
+  document.getElementById('d-steps').textContent = r.steps ? r.steps.toLocaleString('nl-NL') : '—';
   document.getElementById('d-starttime').textContent = r.startTime ? fmtStartTime(r.startTime) : '—';
   document.getElementById('d-date').textContent = fmtDate(r.date);
   const nb = document.getElementById('d-notes-block');
